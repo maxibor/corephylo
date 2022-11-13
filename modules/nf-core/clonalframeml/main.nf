@@ -25,10 +25,10 @@ process CLONALFRAMEML {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    """
+    """    
     ClonalFrameML \\
         $newick \\
-        <(gzip -cdf $msa) \\
+        $msa \\
         $prefix \\
         $args
 
