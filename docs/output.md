@@ -14,17 +14,6 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 
 - [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution
 
-### FastQC
-
-<details markdown="1">
-<summary>Output files</summary>
-
-- `fastqc/`
-  - `*_fastqc.html`: FastQC report containing quality metrics.
-  - `*_fastqc.zip`: Zip archive containing the FastQC report, tab-delimited data file and plot images.
-
-</details>
-
 ### Pipeline information
 
 <details markdown="1">
