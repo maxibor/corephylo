@@ -18,8 +18,9 @@
             "properties": {
                 "genomes": {
                     "type": "string",
-                    "default": null,
-                    "help_text": "Path to genome sample sheet"
+                    "default": "None",
+                    "help_text": "Path to genome sample sheet",
+                    "description": "Path to genome input sheet"
                 },
                 "bakta_db": {
                     "type": "string",
