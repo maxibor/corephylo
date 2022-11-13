@@ -8,7 +8,7 @@ process MASKRC {
         'quay.io/biocontainers/maskrc-svg:0.5--1' }"
 
     input:
-    tuple val(meta), path(cfml_tree), path(cfml_rec), path(aln)
+    tuple val(meta), path(cfml_tree), path(cfml_status), path(aln)
 
     output:
     tuple val(meta), path("*.aln"), emit: aln
@@ -19,14 +19,14 @@ process MASKRC {
 
     script:
     def args = task.ext.args   ?: ''
-    prefix   = task.ext.prefix ?: "${meta.id}"
+    def prefix   = task.ext.prefix ?: "${meta.id}"
     """
     maskrc-svg.py \\
-        $cfml \\
         $args \\
         --aln ${aln} \\
         --symbol "-" \\
-        --out ${prefix}.masked.aln
+        --out ${prefix}.masked.aln \\
+        $prefix
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

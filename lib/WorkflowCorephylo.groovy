@@ -10,12 +10,6 @@ class WorkflowCorephylo {
     // Check and validate parameters
     //
     public static void initialise(params, log) {
-
-
-        if (!params.fasta) {
-            log.error "Genome fasta file not specified with e.g. '--fasta genome.fa' or via a detectable config file."
-            System.exit(1)
-        }
     }
 
     public static String methodsDescriptionText(run_workflow, mqc_methods_yaml) {

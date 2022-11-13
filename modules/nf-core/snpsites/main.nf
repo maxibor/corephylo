@@ -7,12 +7,12 @@ process SNPSITES {
         'quay.io/biocontainers/snp-sites:2.5.1--hed695b0_0' }"
 
     input:
-    path alignment
+    tuple val(meta), path(alignment)
 
     output:
-    path "*.fas"        , emit: fasta
-    path "*.sites.txt"  , emit: constant_sites
-    path "versions.yml" , emit: versions
+    tuple val(meta), path("*.fas")        , emit: fasta
+    tuple val(meta), path("*.sites.txt")  , emit: constant_sites
+    path("versions.yml")                  , emit: versions
     env   CONSTANT_SITES, emit: constant_sites_string
 
     when:

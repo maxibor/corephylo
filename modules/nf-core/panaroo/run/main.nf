@@ -1,5 +1,4 @@
 process PANAROO_RUN {
-    tag "$meta.id"
     label 'process_medium'
 
     conda (params.enable_conda ? "bioconda::panaroo=1.2.9" : null)
@@ -8,11 +7,11 @@ process PANAROO_RUN {
         'quay.io/biocontainers/panaroo:1.2.9--pyhdfd78af_0' }"
 
     input:
-    tuple val(meta), path(gff)
+    path(gff)
 
     output:
-    tuple val(meta), path("results/*")                                      , emit: results
-    tuple val(meta), path("results/core_gene_alignment.aln"), optional: true, emit: aln
+    path("results/*")                                      , emit: results
+    path("results/core_gene_alignment.aln"), optional: true, emit: aln
     path "versions.yml"                                                     , emit: versions
 
     when:
@@ -20,13 +19,12 @@ process PANAROO_RUN {
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
     """
     panaroo \\
         $args \\
         -t $task.cpus \\
         -o results \\
-        -i $gff
+        -i *.gff3 
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

@@ -6,10 +6,10 @@
 
 def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
 
-// Validate input parameters
+// // Validate input parameters
 WorkflowCorephylo.initialise(params, log)
 
-def checkPathParamList = [ params.input, params.fasta ]
+def checkPathParamList = [ params.genomes ]
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
 // Check mandatory parameters
@@ -45,15 +45,15 @@ include { INPUT_CHECK } from '../subworkflows/local/input_check'
 //
 // MODULE: Installed directly from nf-core/modules
 //
-include { GUNZIP                      } from '../modules/nf-core/gunzip/main'
-include { BAKTA                       } from '../modules/nf-core/bakta/main'
-include { PANAROO_RUN                 } from '../modules/nf-core/panaroo/run/main'
-include { CLONALFRAMEML               } from '../modules/nf-core/clonalframeml/main'
-inclide { MASKRC                      } from '../modules/local/maskrc/main'
-include { IQTREE_PRE ; IQTREE_POST    } from '../modules/nf-core/iqtree/main'
-include { SNPSITES                    } from '../modules/nf-core/snpsites/main'
-include { SNPDISTS                    } from '../modules/nf-core/snpdists/main'
-include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
+include { GUNZIP                                       } from '../modules/nf-core/gunzip/main'
+include { BAKTA                                        } from '../modules/nf-core/bakta/main'
+include { PANAROO_RUN                                  } from '../modules/nf-core/panaroo/run/main'
+include { CLONALFRAMEML                                } from '../modules/nf-core/clonalframeml/main'
+include { MASKRC                                       } from '../modules/local/maskrc/main'
+include { IQTREE as IQTREE_PRE ; IQTREE as IQTREE_POST } from '../modules/nf-core/iqtree/main'
+include { SNPSITES                                     } from '../modules/nf-core/snpsites/main'
+include { SNPDISTS                                     } from '../modules/nf-core/snpdists/main'
+include { CUSTOM_DUMPSOFTWAREVERSIONS                  } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -73,15 +73,17 @@ workflow COREPHYLO {
     INPUT_CHECK (
         ch_input
     )
-    ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
+    // ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
-
-    INPUT.CHECK.out.fasta
+    INPUT_CHECK.out.fasta
         .branch {
-            decompressed: it[1].toString().tokenize(".")[-1] != 'gz'
-            compressed: it[1].toString().tokenize(".")[-1] == 'gz'
+            decompressed: ! it[1].toString().tokenize(".")[-1].contains('gz')
+            compressed: it[1].toString().tokenize(".")[-1].contains('gz')
         }
         .set { genomes_fork }
+
+    genomes_fork.decompressed
+        .view()
 
     GUNZIP (
         genomes_fork.compressed
@@ -100,30 +102,46 @@ workflow COREPHYLO {
     )
     ch_versions = ch_versions.mix(BAKTA.out.versions)
 
+    BAKTA.out.gff
+        .map {meta, gff -> [gff] }
+        .collect()
+        .set { gffs }
+
     PANAROO_RUN(
-        BAKTA.out.gff
+        gffs
     )
     ch_versions = ch_versions.mix(PANAROO_RUN.out.versions)
 
+    PANAROO_RUN.out.aln
+        .map { it ->
+            def meta = [:]
+            meta.id = "core_genome"
+            [meta, it]
+        }
+        .set { core_genome_ch }
+
     IQTREE_PRE (
-        PANAROO_RUN.out.aln
+        core_genome_ch,
+        []
     )
     ch_versions = ch_versions.mix(IQTREE_PRE.out.versions)
 
     CLONALFRAMEML(
-        IQTREE_PRE.out.phylogeny.join(PANAROO_RUN.out.aln)
+        IQTREE_PRE.out.phylogeny
+        .join (core_genome_ch)
     )
     ch_versions = ch_versions.mix(CLONALFRAMEML.out.versions)
 
     MASKRC(
         CLONALFRAMEML.out.newick
         .join(CLONALFRAMEML.out.status)
-        .join(PANAROO_RUN.out.aln)
+        .join(core_genome_ch)
     )
     ch_versions = ch_versions.mix(MASKRC.out.versions)
 
     IQTREE_POST (
-        MASKRC.out.aln
+        MASKRC.out.aln,
+        []
     )
 
     SNPSITES(

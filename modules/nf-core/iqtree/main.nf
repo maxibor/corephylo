@@ -8,11 +8,11 @@ process IQTREE {
         'quay.io/biocontainers/iqtree:2.1.4_beta--hdcc8f71_0' }"
 
     input:
-    path alignment
+    tuple val(meta), path(alignment)
     val constant_sites
 
     output:
-    path "*.treefile",    emit: phylogeny
+    tuple val(meta), path("*.treefile"),    emit: phylogeny
     path "versions.yml" , emit: versions
 
     when:
