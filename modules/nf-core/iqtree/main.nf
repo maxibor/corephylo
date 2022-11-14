@@ -1,5 +1,5 @@
 process IQTREE {
-    tag "$alignment"
+    tag "$meta.id"
     label 'process_medium'
 
     conda (params.enable_conda ? 'bioconda::iqtree=2.1.4_beta' : null)

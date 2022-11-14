@@ -1,4 +1,5 @@
 process SNPSITES {
+    tag "$meta.id"
     label 'process_medium'
 
     conda (params.enable_conda ? "bioconda::snp-sites=2.5.1" : null)
