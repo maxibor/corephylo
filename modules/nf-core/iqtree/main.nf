@@ -22,8 +22,10 @@ process IQTREE {
     def args = task.ext.args ?: ''
     def fconst_args = constant_sites ? "-fconst $constant_sites" : ''
     def memory      = task.memory.toString().replaceAll(' ', '')
+    def prefix = task.ext.prefix ?: "${meta.id}"
     """
     iqtree \\
+        -pre $prefix \\
         $fconst_args \\
         $args \\
         -s $alignment \\
