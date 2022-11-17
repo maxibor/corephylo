@@ -25,13 +25,13 @@ process IQTREE {
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     iqtree \\
+        $args \\
         -pre $prefix \\
         $fconst_args \\
-        $args \\
         -s $alignment \\
-        -nt AUTO \\
-        -ntmax $task.cpus \\
-        -mem $memory \\
+        -T AUTO \\
+        --threads-max $task.cpus \\
+        -mem $memory
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
