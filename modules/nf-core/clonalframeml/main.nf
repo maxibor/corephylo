@@ -1,6 +1,6 @@
 process CLONALFRAMEML {
     tag "$meta.id"
-    label 'process_low'
+    label 'process_medium'
 
     conda (params.enable_conda ? "bioconda::clonalframeml=1.12" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -25,10 +25,12 @@ process CLONALFRAMEML {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    """    
+    """
+    sed -e '/^[^>]/s/[^ATGCatgc]/N/g' $msa > ${prefix}.clean.aln
+
     ClonalFrameML \\
         $newick \\
-        $msa \\
+        ${prefix}.clean.aln \\
         $prefix \\
         $args
 
