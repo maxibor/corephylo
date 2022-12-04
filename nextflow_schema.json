@@ -53,6 +53,12 @@
                     "default": 0.95,
                     "description": "core genome threshold for Panaroo",
                     "help_text": "See panaroo documentation for more information: https://gtonkinhill.github.io/panaroo/#/gettingstarted/params"
+                },
+                "iqtree_cpu_auto": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Let IQTREE decide the best number of CPUs to use",
+                    "help_text": "See IQTREE documentation for more information: http://www.iqtree.org/doc/Frequently-Asked-Questions#what-is-the-good-number-of-cpu-cores-to-use"
                 }
             }
         },

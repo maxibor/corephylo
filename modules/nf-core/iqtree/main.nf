@@ -23,14 +23,14 @@ process IQTREE {
     def fconst_args = constant_sites ? "-fconst $constant_sites" : ''
     def memory      = task.memory.toString().replaceAll(' ', '')
     def prefix = task.ext.prefix ?: "${meta.id}"
+    def cpus = task.ext.cpu_auto ? "AUTO -ntmax ${task.cpus}" : "${task.cpus}"
     """
     iqtree \\
         $args \\
         -pre $prefix \\
         $fconst_args \\
         -s $alignment \\
-        -T AUTO \\
-        --threads-max $task.cpus \\
+        -nt $cpus \\
         -mem $memory
 
     cat <<-END_VERSIONS > versions.yml
