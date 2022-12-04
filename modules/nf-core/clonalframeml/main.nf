@@ -26,7 +26,7 @@ process CLONALFRAMEML {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    sed -e '/^[^>]/s/[^ATGCatgc]/N/g' $msa > ${prefix}.clean.aln
+    sed -e '/^[^>]/s/[^ATGCatgc-]/N/g' $msa > ${prefix}.clean.aln
 
     ClonalFrameML \\
         $newick \\
