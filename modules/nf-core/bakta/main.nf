@@ -25,8 +25,8 @@ process BAKTA {
     tuple val(meta), path("${prefix}.hypotheticals.faa"), emit: hypotheticals_faa
     tuple val(meta), path("${prefix}.tsv")              , emit: tsv
     tuple val(meta), path("${prefix}.txt")              , emit: txt
-    tuple val(meta), path("${prefix}.png")              , emit: png
-    tuple val(meta), path("${prefix}.svg")              , emit: svg
+    tuple val(meta), path("${prefix}.png")              , emit: png, optional: true
+    tuple val(meta), path("${prefix}.svg")              , emit: svg, optional: true
     tuple val(meta), path("${prefix}.json")             , emit: json
     path "versions.yml"                                 , emit: versions
 
