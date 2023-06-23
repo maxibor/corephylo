@@ -9,9 +9,10 @@ graph LR;
     A[fasta genomes] -->|Bakta <br> functional annotation | B[GFF3 functional annotations]
     B -->|PANAROO <br> pangenome computation| C[Fasta core genomes alignment]
     C -->|ClonalFrameML + maskrc-svg.py <br> mask recombinant regions| D[Non recombinant core genomes alignment]
-    D -->|IQTree <br> ML phylogenetic analysis| E[Phylogenetic tree]
-    D -->|SNP-sites <br> SNPs extraction| F[VCF]
-    D -->|snp-dists <br> pairwise distance computation| G[SNPs based pairwise distance matrix]
+    D -->|IQTree <br> ML phylogenetic analysis| E[ML Phylogenetic tree]
+    D -->|RapidNJ <br> NJ phylogenetic analysis| F[NJ Phylogenetic tree]
+    D -->|SNP-sites <br> SNPs extraction| G[VCF]
+    D -->|snp-dists <br> pairwise distance computation| H[SNPs based pairwise distance matrix]
 ```
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules) in order to make them available to all nf-core pipelines, and to everyone within the Nextflow community!

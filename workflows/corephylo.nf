@@ -51,6 +51,7 @@ include { PANAROO_RUN                                  } from '../modules/nf-cor
 include { CLONALFRAMEML                                } from '../modules/nf-core/clonalframeml/main'
 include { MASKRC                                       } from '../modules/local/maskrc/main'
 include { IQTREE as IQTREE_PRE ; IQTREE as IQTREE_POST } from '../modules/nf-core/iqtree/main'
+include { RAPIDNJ                                      } from '../modules/nf-core/rapidnj/main'
 include { SNPSITES                                     } from '../modules/nf-core/snpsites/main'
 include { SNPDISTS                                     } from '../modules/nf-core/snpdists/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS                  } from '../modules/nf-core/custom/dumpsoftwareversions/main'
@@ -138,6 +139,10 @@ workflow COREPHYLO {
         .join(core_genome_ch)
     )
     ch_versions = ch_versions.mix(MASKRC.out.versions)
+
+    RAPIDNJ (
+        MASKRC.out.aln
+    )
 
     IQTREE_POST (
         MASKRC.out.aln,
