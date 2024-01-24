@@ -37,7 +37,7 @@ An [example samplesheet](../test/data/genome_input.csv) has been provided with t
 The typical command for running the pipeline is as follows:
 
 ```bash
-nextflow run maxibor/corephylo --genome genomesheet.csv --outdir <OUTDIR> -profile docker
+nextflow run maxibor/corephylo --genome genomesheet.csv --bakta-db  <path-to-bakta-db> --outdir <OUTDIR> -profile docker
 ```
 
 This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
@@ -50,6 +50,14 @@ work                # Directory containing the nextflow working files
 .nextflow_log       # Log file from Nextflow
 # Other nextflow hidden files, eg. history of pipeline runs and old logs.
 ```
+
+## Bakta database
+
+Corephylo relies on [Bakta](https://github.com/oschwengers/bakta) to annotate genomes.
+The installation of Bakta database is described in details in the [Bakta documentation](https://bakta.readthedocs.io/en/latest/BAKTA.html#database-download).
+
+> [!WARNING]
+> Make sure you install a version of Bakta database compatible with the current version of Bakta in Corephylo (version available [here](../modules/nf-core/bakta/main.nf)) ! If you choose to install the database using Bakta itself (recommended), we suggest to install the same version of Bakta (using conda for example) to download the database, and make sure the database version is compatible.
 
 ### Updating the pipeline
 
