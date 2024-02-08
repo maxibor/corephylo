@@ -4,18 +4,17 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
+include { paramsSummaryLog; paramsSummaryMap } from 'plugin/nf-validation'
 
-// // Validate input parameters
-WorkflowCorephylo.initialise(params, log)
+def logo = NfcoreTemplate.logo(workflow, params.monochrome_logs)
+def citation = '\n' + WorkflowMain.citation(workflow) + '\n'
+def summary_params = paramsSummaryMap(workflow)
 
-def checkPathParamList = [ params.genomes ]
-for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
+// Print parameter summary log to screen
+log.info logo + paramsSummaryLog(workflow) + citation
 
-// Check mandatory parameters
 if (params.genomes) { ch_input = file(params.genomes) } else { exit 1, 'Genomes samplesheet not specified!' }
 
-/*
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -49,7 +48,9 @@ include { GUNZIP                                       } from '../modules/nf-cor
 include { BAKTA                                        } from '../modules/nf-core/bakta/main'
 include { PANAROO_RUN                                  } from '../modules/nf-core/panaroo/run/main'
 include { CLONALFRAMEML                                } from '../modules/nf-core/clonalframeml/main'
-include { MASKRC                                       } from '../modules/local/maskrc/main'
+include { CORECOMB                                     } from '../modules/local/corecomb'
+include { COMP_RM                                      } from '../modules/local/comp_rm'
+include { CFML_VIZ                                     } from '../modules/local/cfml_viz'
 include { IQTREE as IQTREE_PRE ; IQTREE as IQTREE_POST } from '../modules/nf-core/iqtree/main'
 include { RAPIDNJ                                      } from '../modules/nf-core/rapidnj/main'
 include { SNPSITES                                     } from '../modules/nf-core/snpsites/main'
@@ -127,35 +128,47 @@ workflow COREPHYLO {
     )
     ch_versions = ch_versions.mix(IQTREE_PRE.out.versions)
 
+    CORECOMB(
+        PANAROO_RUN.out.fas,
+        PANAROO_RUN.out.pan_genome_reference
+    )
+
     CLONALFRAMEML(
-        IQTREE_PRE.out.phylogeny
-        .join (core_genome_ch)
+        IQTREE_PRE.out.phylogeny,
+        CORECOMB.out.xmfa
     )
     ch_versions = ch_versions.mix(CLONALFRAMEML.out.versions)
 
-    MASKRC(
-        CLONALFRAMEML.out.newick
-        .join(CLONALFRAMEML.out.status)
-        .join(core_genome_ch)
+    COMP_RM(
+        CLONALFRAMEML.out.em
     )
-    ch_versions = ch_versions.mix(MASKRC.out.versions)
+
+    CFML_VIZ(
+        CLONALFRAMEML.out.newick.join(
+            CLONALFRAMEML.out.pos_ref
+        ).join(
+            CLONALFRAMEML.out.ml_fasta
+        ).join(
+            CLONALFRAMEML.out.status
+        )
+    )
 
     RAPIDNJ (
-        MASKRC.out.aln
+        CLONALFRAMEML.out.filtered
     )
 
     IQTREE_POST (
-        MASKRC.out.aln,
+        CLONALFRAMEML.out.filtered,
         []
     )
 
     SNPSITES(
-        MASKRC.out.aln
+        CLONALFRAMEML.out.filtered
     )
     ch_versions = ch_versions.mix(SNPSITES.out.versions)
 
     SNPDISTS(
-        MASKRC.out.aln
+        CLONALFRAMEML.out.filtered
     )
     ch_versions = ch_versions.mix(SNPDISTS.out.versions)
 

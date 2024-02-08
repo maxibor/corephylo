@@ -2,20 +2,22 @@ process CLONALFRAMEML {
     tag "$meta.id"
     label 'process_medium'
 
-    conda (params.enable_conda ? "bioconda::clonalframeml=1.12" : null)
+    conda (params.enable_conda ? "bioconda::clonalframeml=1.13" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/clonalframeml:1.12--h7d875b9_1' :
-        'quay.io/biocontainers/clonalframeml:1.12--h7d875b9_1' }"
+        'https://depot.galaxyproject.org/singularity/clonalframeml:1.13--h4ac6f70_0' :
+        'quay.io/biocontainers/clonalframeml:1.13--h4ac6f70_0' }"
 
     input:
-    tuple val(meta), path(newick), path(msa)
+    tuple val(meta), path(newick)
+    path(msa)
 
     output:
     tuple val(meta), path("*.emsim.txt")                   , emit: emsim, optional: true
+    tuple val(meta), path("*.filtered.fasta")              , emit: filtered, optional: true
     tuple val(meta), path("*.em.txt")                      , emit: em
     tuple val(meta), path("*.importation_status.txt")      , emit: status
     tuple val(meta), path("*.labelled_tree.newick")        , emit: newick
-    tuple val(meta), path("*.ML_sequence.fasta")           , emit: fasta
+    tuple val(meta), path("*.ML_sequence.fasta")           , emit: ml_fasta
     tuple val(meta), path("*.position_cross_reference.txt"), emit: pos_ref
     path "versions.yml"                                    , emit: versions
 
@@ -26,11 +28,9 @@ process CLONALFRAMEML {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    sed -e '/^[^>]/s/[^ATGCatgc-]/N/g' $msa > ${prefix}.clean.aln
-
     ClonalFrameML \\
         $newick \\
-        ${prefix}.clean.aln \\
+        $msa \\
         $prefix \\
         $args
 

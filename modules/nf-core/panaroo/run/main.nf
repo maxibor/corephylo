@@ -11,8 +11,10 @@ process PANAROO_RUN {
 
     output:
     path("results/*")                                      , emit: results
-    path("results/core_gene_alignment.aln"), optional: true, emit: aln
-    path "versions.yml"                                                     , emit: versions
+    path("results/aligned_gene_sequences/*.fas")           , optional: true, emit: fas
+    path("results/core_gene_alignment.aln")                , optional: true, emit: aln
+    path("results/pan_genome_reference.fa")                 , optional: true, emit: pan_genome_reference
+    path "versions.yml"                                    , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
