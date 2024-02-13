@@ -47,11 +47,14 @@ include { INPUT_CHECK } from '../subworkflows/local/input_check'
 include { GUNZIP                                       } from '../modules/nf-core/gunzip/main'
 include { BAKTA                                        } from '../modules/nf-core/bakta/main'
 include { PANAROO_RUN                                  } from '../modules/nf-core/panaroo/run/main'
+include { PANAROO_INTEGRATE                            } from '../modules/nf-core/panaroo/integrate/main'
 include { CLONALFRAMEML                                } from '../modules/nf-core/clonalframeml/main'
 include { CORECOMB                                     } from '../modules/local/corecomb'
 include { COMP_RM                                      } from '../modules/local/comp_rm'
 include { CFML_VIZ                                     } from '../modules/local/cfml_viz'
-include { IQTREE as IQTREE_PRE ; IQTREE as IQTREE_POST } from '../modules/nf-core/iqtree/main'
+include { IQTREE as IQTREE_PRE ; 
+          IQTREE as IQTREE_POST ; 
+          IQTREE as IQTREE_ROOT                        } from '../modules/nf-core/iqtree/main'
 include { RAPIDNJ                                      } from '../modules/nf-core/rapidnj/main'
 include { SNPSITES                                     } from '../modules/nf-core/snpsites/main'
 include { SNPDISTS                                     } from '../modules/nf-core/snpdists/main'
@@ -84,9 +87,6 @@ workflow COREPHYLO {
         }
         .set { genomes_fork }
 
-    genomes_fork.decompressed
-        .view()
-
     GUNZIP (
         genomes_fork.compressed
     )
@@ -104,34 +104,75 @@ workflow COREPHYLO {
     )
     ch_versions = ch_versions.mix(BAKTA.out.versions)
 
+    BAKTA.out.gff.dump(tag: 'bakta_gff', pretty: true)
+
     BAKTA.out.gff
-        .map {meta, gff -> [gff] }
-        .collect()
+        .branch {
+            ingroup: it[0]['group'] == 'ingroup'
+            outgroup: it[0]['group'] == 'outgroup'
+        }
         .set { gffs }
 
-    PANAROO_RUN(
-        gffs
-    )
+    gffs.ingroup.map {meta, gff -> [gff] }.collect().set { ingroup_gffs }
+    gffs.outgroup.map {meta, gff -> [gff] }.set{ outgroup_gff }
+
+    if (params.root_method == 'outgroup') {
+        PANAROO_RUN (
+            ingroup_gffs
+        )
+    } else {
+        PANAROO_RUN (
+            ingroup_gffs.mix(outgroup_gff).collect()
+        )
+    }
+
     ch_versions = ch_versions.mix(PANAROO_RUN.out.versions)
 
-    PANAROO_RUN.out.aln
-        .map { it ->
-            def meta = [:]
-            meta.id = "core_genome"
-            [meta, it]
-        }
-        .set { core_genome_ch }
+    core_genome_ch = Channel.empty()
+
+    if (params.root_method == 'outgroup') {
+        PANAROO_INTEGRATE(
+            outgroup_gff,
+            PANAROO_RUN.out.results
+        )
+
+        core_genome_ch = core_genome_ch.mix(
+            PANAROO_INTEGRATE.out.aln
+                .map {
+                    def meta = [:]
+                    meta.id = "core_genome"
+                    [meta, it]
+                }
+        )
+
+        CORECOMB(
+            PANAROO_INTEGRATE.out.fas,
+            PANAROO_INTEGRATE.out.pan_genome_reference
+        )
+    } else {
+        
+        core_genome_ch = core_genome_ch.mix(
+            PANAROO_RUN.out.aln
+                .map { it ->
+                    def meta = [:]
+                    meta.id = "core_genome"
+                    [meta, it]
+                }
+        )
+
+        CORECOMB (
+            PANAROO_RUN.out.fas,
+            PANAROO_RUN.out.pan_genome_reference
+        )
+    }
+
+    core_genome_ch.dump(tag: 'core_genome_ch', pretty: true)
 
     IQTREE_PRE (
         core_genome_ch,
         []
     )
     ch_versions = ch_versions.mix(IQTREE_PRE.out.versions)
-
-    CORECOMB(
-        PANAROO_RUN.out.fas,
-        PANAROO_RUN.out.pan_genome_reference
-    )
 
     CLONALFRAMEML(
         IQTREE_PRE.out.phylogeny,
@@ -161,6 +202,13 @@ workflow COREPHYLO {
         CLONALFRAMEML.out.filtered,
         []
     )
+
+    if (params.root_method == 'nonrev') {
+        IQTREE_ROOT (
+            CLONALFRAMEML.out.filtered,
+            []
+        )
+    }
 
     SNPSITES(
         CLONALFRAMEML.out.filtered

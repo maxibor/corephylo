@@ -8,17 +8,17 @@
 
 ## genome input
 
-You will need to create a genomesheet with information about the genomes you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 2 columns, and a header row as shown in the examples below.
+You will need to create a genomesheet with information about the genomes you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row as shown in the examples below.
 
 ```bash
 --genome '[path to genomesheet file]'
 ```
 
 ```console
-genome_name,genome_fasta
-GCA_004354795,https://raw.githubusercontent.com/maxibor/corephylo/master/test/data/genomes/1588_lentilactobacillus_hilgardii_GCA_004354795.fna.gz
-GCA_009832765,https://raw.githubusercontent.com/maxibor/corephylo/master/test/data/genomes/1588_lentilactobacillus_hilgardii_GCA_009832765.fna.gz
-GCA_011765585,https://raw.githubusercontent.com/maxibor/corephylo/master/test/data/genomes/1588_lentilactobacillus_hilgardii_GCA_011765585.fna.gz
+genome_name,group,genome_fasta
+GCA_004354795,ingroup,https://raw.githubusercontent.com/maxibor/corephylo/master/test/data/genomes/1588_lentilactobacillus_hilgardii_GCA_004354795.fna.gz
+GCA_009832765,ingroup,https://raw.githubusercontent.com/maxibor/corephylo/master/test/data/genomes/1588_lentilactobacillus_hilgardii_GCA_009832765.fna.gz
+GCA_011765585,outgroup,https://raw.githubusercontent.com/maxibor/corephylo/master/test/data/genomes/1588_lentilactobacillus_hilgardii_GCA_011765585.fna.gz
 
 ```
 
@@ -28,6 +28,7 @@ GCA_011765585,https://raw.githubusercontent.com/maxibor/corephylo/master/test/da
 | Column    | Description                                                                                                                                                                            |
 | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `genome_name`  | Genome name. |
+| `group` | Whether the genome is an `ingroup` or `outgroup` | 
 | `genome_fasta` | Full path to Genome fasta. File can be gzipped or not, and must have the on the following extension: `.fa`, `.fna`, `.fasta`, `.fa.gz`, `.fna.gz`, `.fasta.gz` |
 
 An [example samplesheet](../test/data/genome_input.csv) has been provided with the pipeline.

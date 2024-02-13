@@ -22,10 +22,13 @@ Parameters specific to the corephylo pipeline
 | Parameter | Description | Type | Default | Required | Hidden |                                                                          
 |-----------|-----------|-----------|-----------|-----------|-----------|                                                                 
 | `core_threshold` | core genome threshold for Panaroo <details><summary>Help</summary><small>See panaroo documentation for more information | `float` | `0.95`
+| `root_method` | Choose whether to use an outgroup to root the phylogeny, or root using non-reversible IQtree model. <details><summary>Help</summary>Either `outgroup` or `nonrev` | `string` | `outgroup`
 | `iqtree_cpu_auto` | Let IQTREE decide the best number of CPUs to use Help <details><summary>Help</summary>See IQTREE documentation for more information | `boolean` | `false`
 | `iqtree_no_bootstrap` | Deactive UFBootstrap in IQTree | `boolean` | `false` |  |  |                                                           
 | `iqtree_no_bnni` | Deactive bnni in IQTREE <details><summary>Help</summary><small>UFBoot trees by nearest neighbor interchange (NNI) | `boolean` | `false`
-                                                                                                                                          
+| `iqtree_root` | Root tree using non-reversible models <details><summary>Help</summary><small>http://www.iqtree.org/doc/Rootstrap#inferring | `boolean` | `false`
+| `iqtree_mset` | Subsets of models to test <details><summary>Help</summary><small>Comma separated list of models without spaces. Example `GTR,TVM`</small></details>| `string` | `null`
+
 ## Institutional config options                                                                                                           
                                                                                                                                           
 Parameters used to describe centralised config profiles. These should not be edited.                                                      

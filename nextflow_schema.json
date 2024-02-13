@@ -48,6 +48,12 @@
                     "description": "core genome threshold for Panaroo",
                     "help_text": "See panaroo documentation for more information: https://gtonkinhill.github.io/panaroo/#/gettingstarted/params"
                 },
+                "root_method": {
+                    "type": "string",
+                    "default": "outgroup",
+                    "description": "Choose whether to use an outgroup to root the phylogeny, or root using non-reversible IQtree model",
+                    "enum": ["outgroup", "nonrev"]
+                },
                 "iqtree_cpu_auto": {
                     "type": "boolean",
                     "description": "Let IQTREE decide the best number of CPUs to use",
@@ -61,6 +67,11 @@
                     "type": "boolean",
                     "description": "Deactive bnni in IQTREE",
                     "help_text": "UFBoot trees by nearest neighbor interchange (NNI) "
+                },
+                "iqtree_mset": {
+                    "type": "string",
+                    "description": "Subsets of models to test",
+                    "help_text": "Comma separated list of models without spaces"
                 }
             }
         },
@@ -141,7 +152,6 @@
                     "description": "Maximum amount of time that can be requested for any single job.",
                     "default": "240.h",
                     "fa_icon": "far fa-clock",
-                    "pattern": "^(\\d+\\.?\\s*(s|m|h|day)\\s*)+$",
                     "hidden": true,
                     "help_text": "Use to set an upper-limit for the time requirement for each process. Should be a string in the format integer-unit e.g. `--max_time '2.h'`"
                 }

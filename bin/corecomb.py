@@ -50,13 +50,17 @@ def write_xmfa(seqdict, gene_order_pan, genomes, pan_fa, gene_aln_len, outfile):
     with open(outfile, "w") as fw:
         for gene in gene_order+not_in_pang:
             for genome in genomes:
-                core_len[genome] += len(seqdict[gene][genome])
+                try:
+                    core_len[genome] += len(seqdict[gene][genome])
+                    missing = ""
+                except KeyError:
+                    core_len[genome] += gene_aln_len[gene]
+                    missing = "missing"
+                fw.write(f">{genome}:{i}-{i+gene_aln_len[gene]} {gene} {missing}\n")
                 if genome in seqdict[gene]:
-                    fw.write(f">{genome}:{i}-{i+gene_aln_len[gene]} {gene}\n")
                     fw.write("\n".join(wrap(seqdict[gene][genome], 60)) + "\n")
                 else:
                     logging.warning(f"Genome {genome} is missing gene {gene}")
-                    fw.write(f">{genome}\n")
                     fw.write("\n".join(wrap("-" * gene_aln_len[gene], 60)) + "\n")
             i += gene_aln_len[gene] + 1000
             fw.write("=\n")
