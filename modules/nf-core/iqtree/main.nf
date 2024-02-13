@@ -12,7 +12,12 @@ process IQTREE {
     val constant_sites
 
     output:
-    tuple val(meta), path("*.treefile"),    emit: phylogeny
+    tuple val(meta), path("*.treefile")      , emit: phylogeny
+    tuple val(meta), path("*.log")           , emit: log
+    tuple val(meta), path("*.rootstrap.nex") , emit: rootstrap, optional: true
+    tuple val(meta), path("*.bionj")         , emit: bionj, optional: true
+    tuple val(meta), path("*.contree")       , emit: contree, optional: true
+    tuple val(meta), path("*.roottest.csv")  , emit: roottest, optional: true
     path "versions.yml" , emit: versions
 
     when:
