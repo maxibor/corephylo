@@ -61,7 +61,7 @@
                 },
                 "iqtree_no_bootstrap": {
                     "type": "boolean",
-                    "description": "Deactive UFBootstrap in IQTree"
+                    "description": "Deactive UFBootstrap in IQTREE"
                 },
                 "iqtree_no_bnni": {
                     "type": "boolean",
@@ -72,6 +72,11 @@
                     "type": "string",
                     "description": "Subsets of models to test",
                     "help_text": "Comma separated list of models without spaces"
+                },
+                "iqtree_alrt": {
+                    "type": "integer",
+                    "description": "IQTREE Replicates for SH approximate likelihood ratio test",
+                    "default": null
                 }
             }
         },
