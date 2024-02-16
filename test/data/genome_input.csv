@@ -1,4 +1,5 @@
 genome_name,group,genome_fasta
 GCA_004354795,ingroup,https://raw.githubusercontent.com/maxibor/corephylo/master/test/data/genomes/1588_lentilactobacillus_hilgardii_GCA_004354795.fna.gz
 GCA_009832765,ingroup,https://raw.githubusercontent.com/maxibor/corephylo/master/test/data/genomes/1588_lentilactobacillus_hilgardii_GCA_009832765.fna.gz
-GCA_011765585,outgroup,https://raw.githubusercontent.com/maxibor/corephylo/master/test/data/genomes/1588_lentilactobacillus_hilgardii_GCA_011765585.fna.gz
+GCA_011765585,ingroup,https://raw.githubusercontent.com/maxibor/corephylo/master/test/data/genomes/1588_lentilactobacillus_hilgardii_GCA_011765585.fna.gz
+GCA_001435875,outgroup,https://raw.githubusercontent.com/maxibor/corephylo/master/test/data/genomes/390841_lentilactobacillus_farraginis_dsm_18382_GCA_001435875.fna.gz
