@@ -10,6 +10,11 @@
                         "git_sha": "2c784da4d6684ffd2c914ee71d6cce434204c50b",
                         "installed_by": ["modules"]
                     },
+                    "bakta/bakta": {
+                        "branch": "master",
+                        "git_sha": "666652151335353eef2fcd58880bcef5bc2928e1",
+                        "installed_by": ["modules"]
+                    },
                     "clonalframeml": {
                         "branch": "master",
                         "git_sha": "5e34754d42cd2d5d248ca8673c0a53cdf5624905",
