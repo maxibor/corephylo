@@ -25,6 +25,7 @@ process CORECOMB {
         --gene_al_dir . \\
         --pan_fa $pan_genome_reference \\
         --extension $extension \\
+        $args \\
         --outfile corecomb.xmfa
     """
 }

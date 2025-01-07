@@ -50,11 +50,13 @@ include { PANAROO_RUN                                  } from '../modules/nf-cor
 include { PANAROO_INTEGRATE                            } from '../modules/local/panaroo/integrate/main'
 include { CLONALFRAMEML                                } from '../modules/nf-core/clonalframeml/main'
 include { CORECOMB                                     } from '../modules/local/corecomb'
+include { ROOT_REMOVE                                  } from '../modules/local/root_remove' 
 include { COMP_RM                                      } from '../modules/local/comp_rm'
 include { CFML_VIZ                                     } from '../modules/local/cfml_viz'
 include { IQTREE as IQTREE_PRE ;
           IQTREE as IQTREE_POST ;
           IQTREE as IQTREE_ROOT                        } from '../modules/nf-core/iqtree/main'
+include { MAFFT_ALIGN                                  } from '../modules/nf-core/mafft/align/main'
 include { RAPIDNJ                                      } from '../modules/nf-core/rapidnj/main'
 include { SNPSITES                                     } from '../modules/nf-core/snpsites/main'
 include { SNPDISTS                                     } from '../modules/nf-core/snpdists/main'
@@ -104,6 +106,8 @@ workflow COREPHYLO {
     )
     ch_versions = ch_versions.mix(BAKTA_BAKTA.out.versions)
 
+    ougroup_fa_ch = genome_pre_processed.filter {it[0]['group'] == 'outgroup'}
+    
     BAKTA_BAKTA.out.gff.dump(tag: 'bakta_gff', pretty: true)
 
     BAKTA_BAKTA.out.gff
@@ -168,14 +172,25 @@ workflow COREPHYLO {
 
     core_genome_ch.dump(tag: 'core_genome_ch', pretty: true)
 
+    recomb_phylo = Channel.empty()
+
     IQTREE_PRE (
         core_genome_ch,
         []
     )
+
+    if (params.root_method == 'outgroup') {
+        ROOT_REMOVE(
+            IQTREE_PRE.out.phylogeny
+        )
+        recomb_phylo.mix(ROOT_REMOVE.out.nwk)
+    } else {
+        recomb_phylo.mix(IQTREE_PRE.out.phylogeny)
+    }
     ch_versions = ch_versions.mix(IQTREE_PRE.out.versions)
 
     CLONALFRAMEML(
-        IQTREE_PRE.out.phylogeny,
+        recomb_phylo,
         CORECOMB.out.xmfa
     )
     ch_versions = ch_versions.mix(CLONALFRAMEML.out.versions)
@@ -194,29 +209,47 @@ workflow COREPHYLO {
         )
     )
 
+    ch_msa_no_recomb = Channel.empty()
+
+    if (params.root_method == 'outgtoup') {
+        MAFFT_ALIGN(
+            CLONALFRAMEML.out.filtered,
+            [],
+            [],
+            [],
+            [],
+            ougroup_fa_ch
+        )
+        ch_msa_no_recomb = MAFFT_ALIGN.out.fas
+    } else {
+        ch_msa_no_recomb = CLONALFRAMEML.out.filtered
+    }
+
+    
+
     RAPIDNJ (
-        CLONALFRAMEML.out.filtered
+        ch_msa_no_recomb
     )
 
     IQTREE_POST (
-        CLONALFRAMEML.out.filtered,
+        ch_msa_no_recomb,
         []
     )
 
     if (params.root_method == 'nonrev') {
         IQTREE_ROOT (
-            CLONALFRAMEML.out.filtered,
+            ch_msa_no_recomb,
             []
         )
     }
 
     SNPSITES(
-        CLONALFRAMEML.out.filtered
+        ch_msa_no_recomb
     )
     ch_versions = ch_versions.mix(SNPSITES.out.versions)
 
     SNPDISTS(
-        CLONALFRAMEML.out.filtered
+        ch_msa_no_recomb
     )
     ch_versions = ch_versions.mix(SNPDISTS.out.versions)
 

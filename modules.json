@@ -35,6 +35,11 @@
                         "git_sha": "5e34754d42cd2d5d248ca8673c0a53cdf5624905",
                         "installed_by": ["modules"]
                     },
+                    "mafft/align": {
+                        "branch": "master",
+                        "git_sha": "868cb0d7fc4862991fb7c2b4cd7289806cd53f81",
+                        "installed_by": ["modules"]
+                    },
                     "panaroo/run": {
                         "branch": "master",
                         "git_sha": "5e34754d42cd2d5d248ca8673c0a53cdf5624905",
