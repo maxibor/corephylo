@@ -49,8 +49,9 @@ include { BAKTA_BAKTA                                  } from '../modules/nf-cor
 include { PANAROO_RUN                                  } from '../modules/nf-core/panaroo/run/main'
 include { PANAROO_INTEGRATE                            } from '../modules/local/panaroo/integrate/main'
 include { CLONALFRAMEML                                } from '../modules/nf-core/clonalframeml/main'
+include { CONCAT_FASTA                                 } from '../modules/local/concat_fasta'
 include { CORECOMB                                     } from '../modules/local/corecomb'
-include { ROOT_REMOVE                                  } from '../modules/local/root_remove' 
+include { ROOT_REMOVE                                  } from '../modules/local/root_remove'
 include { COMP_RM                                      } from '../modules/local/comp_rm'
 include { CFML_VIZ                                     } from '../modules/local/cfml_viz'
 include { IQTREE as IQTREE_PRE ;
@@ -106,9 +107,13 @@ workflow COREPHYLO {
     )
     ch_versions = ch_versions.mix(BAKTA_BAKTA.out.versions)
 
-    ougroup_fa_ch = genome_pre_processed.filter {it[0]['group'] == 'outgroup'}
-    
-    BAKTA_BAKTA.out.gff.dump(tag: 'bakta_gff', pretty: true)
+    CONCAT_FASTA {
+        genomes_pre_processed.filter {it[0]['group'] == 'outgroup'}
+    }
+
+    ougroup_fa_ch = CONCAT_FASTA.out.fa
+
+
 
     BAKTA_BAKTA.out.gff
         .branch {
@@ -172,8 +177,6 @@ workflow COREPHYLO {
 
     core_genome_ch.dump(tag: 'core_genome_ch', pretty: true)
 
-    recomb_phylo = Channel.empty()
-
     IQTREE_PRE (
         core_genome_ch,
         []
@@ -183,9 +186,9 @@ workflow COREPHYLO {
         ROOT_REMOVE(
             IQTREE_PRE.out.phylogeny
         )
-        recomb_phylo.mix(ROOT_REMOVE.out.nwk)
+        recomb_phylo = ROOT_REMOVE.out.nwk
     } else {
-        recomb_phylo.mix(IQTREE_PRE.out.phylogeny)
+        recomb_phylo = IQTREE_PRE.out.phylogeny
     }
     ch_versions = ch_versions.mix(IQTREE_PRE.out.versions)
 
@@ -209,23 +212,26 @@ workflow COREPHYLO {
         )
     )
 
-    ch_msa_no_recomb = Channel.empty()
+    ougroup_fa_ch.dump(tag: 'ougroup_fa_ch', pretty: true)
 
-    if (params.root_method == 'outgtoup') {
+    if (params.root_method == 'outgroup') {
         MAFFT_ALIGN(
             CLONALFRAMEML.out.filtered,
-            [],
-            [],
-            [],
-            [],
-            ougroup_fa_ch
+            [[], []],
+            [[], []],
+            [[], []],
+            [[], []],
+            ougroup_fa_ch,
+            []
         )
         ch_msa_no_recomb = MAFFT_ALIGN.out.fas
     } else {
         ch_msa_no_recomb = CLONALFRAMEML.out.filtered
     }
 
-    
+    ch_msa_no_recomb.dump(tag: 'ch_msa_no_recomb', pretty: true)
+
+
 
     RAPIDNJ (
         ch_msa_no_recomb

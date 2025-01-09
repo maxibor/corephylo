@@ -20,18 +20,26 @@ def root_and_remove_node(tree_file, root_node, output_file):
     except ValueError:
         raise ValueError(f"Node '{root_node}' not found in the tree.")
 
-    # Remove the node by collapsing it
-    for clade in tree.find_clades():
-        if clade.name == root_node:
-            parent = tree.root
-            parent.branch_length = None
-            parent.clades.remove(clade)
-            break
-    else:
-        raise ValueError(f"Node '{root_node}' could not be removed.")
-    
-    # Write the modified tree to the output file
-    Phylo.write(tree, output_file, "newick")
+    # # Remove the node by collapsing it
+    # for clade in tree.find_clades():
+    #     if clade.name == root_node:
+    #         parent = tree.root
+    #         parent.branch_length = None
+    #         parent.clades.remove(clade)
+    #         break
+    # else:
+    #     raise ValueError(f"Node '{root_node}' could not be removed.")
+
+    # # Write the modified tree to the output file
+
+    all_nodes = []
+    for t in tree.get_terminals():
+        if t.name != root_node:
+            all_nodes.append(t.name)
+
+    common_ancestor = tree.common_ancestor(all_nodes)
+
+    Phylo.write(common_ancestor, output_file, "newick")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Root a Newick tree at a specified node, remove the node, and save the result.")
