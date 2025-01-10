@@ -49,14 +49,13 @@ include { BAKTA_BAKTA                                  } from '../modules/nf-cor
 include { PANAROO_RUN                                  } from '../modules/nf-core/panaroo/run/main'
 include { PANAROO_INTEGRATE                            } from '../modules/local/panaroo/integrate/main'
 include { CLONALFRAMEML                                } from '../modules/nf-core/clonalframeml/main'
-include { CONCAT_FASTA                                 } from '../modules/local/concat_fasta'
 include { CORECOMB                                     } from '../modules/local/corecomb'
 include { ROOT_REMOVE                                  } from '../modules/local/root_remove'
 include { COMP_RM                                      } from '../modules/local/comp_rm'
 include { CFML_VIZ                                     } from '../modules/local/cfml_viz'
 include { IQTREE as IQTREE_PRE ;
           IQTREE as IQTREE_POST ;
-          IQTREE as IQTREE_ROOT                        } from '../modules/nf-core/iqtree/main'
+          IQTREE as IQTREE_ROOT                        } from '../modules/local/iqtree/main'
 include { MAFFT_ALIGN                                  } from '../modules/nf-core/mafft/align/main'
 include { RAPIDNJ                                      } from '../modules/nf-core/rapidnj/main'
 include { SNPSITES                                     } from '../modules/nf-core/snpsites/main'
@@ -106,14 +105,6 @@ workflow COREPHYLO {
         []
     )
     ch_versions = ch_versions.mix(BAKTA_BAKTA.out.versions)
-
-    CONCAT_FASTA {
-        genomes_pre_processed.filter {it[0]['group'] == 'outgroup'}
-    }
-
-    ougroup_fa_ch = CONCAT_FASTA.out.fa
-
-
 
     BAKTA_BAKTA.out.gff
         .branch {
@@ -179,6 +170,7 @@ workflow COREPHYLO {
 
     IQTREE_PRE (
         core_genome_ch,
+        [],
         []
     )
 
@@ -212,50 +204,37 @@ workflow COREPHYLO {
         )
     )
 
-    ougroup_fa_ch.dump(tag: 'ougroup_fa_ch', pretty: true)
-
-    if (params.root_method == 'outgroup') {
-        MAFFT_ALIGN(
-            CLONALFRAMEML.out.filtered,
-            [[], []],
-            [[], []],
-            [[], []],
-            [[], []],
-            ougroup_fa_ch,
-            []
-        )
-        ch_msa_no_recomb = MAFFT_ALIGN.out.fas
-    } else {
-        ch_msa_no_recomb = CLONALFRAMEML.out.filtered
-    }
-
-    ch_msa_no_recomb.dump(tag: 'ch_msa_no_recomb', pretty: true)
-
-
-
     RAPIDNJ (
-        ch_msa_no_recomb
+        CLONALFRAMEML.out.filtered
     )
 
-    IQTREE_POST (
-        ch_msa_no_recomb,
-        []
-    )
+
 
     if (params.root_method == 'nonrev') {
         IQTREE_ROOT (
-            ch_msa_no_recomb,
+            CLONALFRAMEML.out.filtered,
+            CLONALFRAMEML.out.newick.map {
+                it[1]
+            },
+            []
+        )
+    } else {
+        IQTREE_POST (
+            CLONALFRAMEML.out.filtered,
+            CLONALFRAMEML.out.newick.map {
+                it[1]
+            },
             []
         )
     }
 
     SNPSITES(
-        ch_msa_no_recomb
+        CLONALFRAMEML.out.filtered
     )
     ch_versions = ch_versions.mix(SNPSITES.out.versions)
 
     SNPDISTS(
-        ch_msa_no_recomb
+        CLONALFRAMEML.out.filtered
     )
     ch_versions = ch_versions.mix(SNPDISTS.out.versions)
 
