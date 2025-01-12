@@ -1,5 +1,5 @@
 process PANAROO_RUN {
-    label 'process_medium'
+    label 'process_high'
 
     conda (params.enable_conda ? "bioconda::panaroo=1.2.9" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
